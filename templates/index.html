@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Service Manager</title>
+<style>
+:root{--bg:#0a0a14;--card:#12121f;--border:#1e1e35;--accent:#6c5ce7;--accent2:#00cec9;--text:#e0e0e0;--text2:#888;--danger:#ff4757;--success:#00e676;--warn:#ffd740}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+
+/* ===== LOGIN ===== */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:380px;max-width:90vw}
+.login-box h2{text-align:center;margin-bottom:24px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px}
+.form-group input{width:100%;padding:10px 14px;background:#1a1a2e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;transition:border .2s}
+.form-group input:focus{border-color:var(--accent)}
+.btn{padding:10px 24px;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600;transition:all .2s}
+.btn-block{width:100%;display:block}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--border)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.error-msg{color:var(--danger);font-size:13px;margin-top:8px;text-align:center;display:none}
+
+/* ===== APP SHELL ===== */
+.app{display:none}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--card);border-bottom:1px solid var(--border)}
+.navbar h1{font-size:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .2s}
+.nav-tab:hover,.nav-tab.active{background:var(--border);color:var(--text)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.user-badge{font-size:12px;color:var(--text2);background:var(--border);padding:4px 12px;border-radius:12px}
+
+/* ===== CONTENT ===== */
+.container{max-width:960px;margin:0 auto;padding:24px}
+.panel{display:none}
+.panel.active{display:block}
+
+/* ===== DASHBOARD ===== */
+.status-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--card);padding:6px 14px;border-radius:16px;font-size:12px;border:1px solid var(--border)}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot-g{background:var(--success);box-shadow:0 0 6px var(--success)}
+.dot-y{background:var(--warn);box-shadow:0 0 6px var(--warn)}
+.dot-r{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:12px}
+.info-card .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.info-card .val{font-family:'Courier New',monospace;font-size:13px;color:var(--accent2);margin-top:4px;word-break:break-all;display:flex;align-items:center;gap:8px}
+.copy-btn{font-size:11px;color:var(--accent);cursor:pointer;padding:2px 8px;border:1px solid var(--accent);border-radius:4px;white-space:nowrap}
+.copy-btn:hover{background:var(--accent);color:#fff}
+.proto-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}
+@media(min-width:640px){.proto-grid{grid-template-columns:1fr 1fr}}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s}
+.pcard:hover{border-color:var(--accent)}
+.phead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none}
+.phead .pname{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.pbadge{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700}
+.pb-vless{background:rgba(108,92,231,.2);color:var(--accent)}
+.pb-vmess{background:rgba(0,206,201,.2);color:var(--accent2)}
+.pb-trojan{background:rgba(255,71,87,.2);color:var(--danger)}
+.pb-grpc{background:rgba(255,215,64,.2);color:var(--warn)}
+.pb-hy2{background:rgba(255,165,2,.2);color:#ffa502}
+.pbody{padding:0 18px 18px;display:none}
+.pbody.open{display:block}
+.crow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.crow:last-child{border-bottom:none}
+.crow .ck{color:var(--text2)}
+.crow .cv{color:var(--text);font-family:monospace;text-align:right;max-width:55%;word-break:break-all}
+.pbtns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+/* ===== SETTINGS ===== */
+.settings-form{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+.settings-form h3{font-size:16px;margin-bottom:16px;color:var(--accent2)}
+.srow{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:12px;margin-bottom:14px}
+.srow label{font-size:13px;color:var(--text2)}
+.srow input{padding:8px 12px;background:#1a1a2e;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:monospace;outline:none}
+.srow input:focus{border-color:var(--accent)}
+.settings-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--success);color:#000;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;transition:transform .3s;pointer-events:none;z-index:999}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--danger);color:#fff}
+.gen-btn{font-size:11px;padding:4px 10px;background:var(--border);color:var(--text);border:1px solid #2a2a4a;border-radius:4px;cursor:pointer}
+.gen-btn:hover{background:#2a2a4a}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-box">
+    <h2>Cloud Service Manager</h2>
+    <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="admin" autocomplete="username"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"></div>
+    <div class="error-msg" id="loginErr"></div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:12px">Login</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="navbar">
+    <h1>Cloud Service Manager</h1>
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-panel="dashboard" onclick="switchTab(this)">Dashboard</div>
+      <div class="nav-tab" data-panel="settings" onclick="switchTab(this)">Settings</div>
+    </div>
+    <div class="nav-right">
+      <span class="user-badge" id="userBadge">admin</span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Dashboard Panel -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="status-bar">
+        <div class="chip"><span class="dot dot-g"></span>Xray</div>
+        <div class="chip"><span class="dot dot-y"></span>Hysteria2</div>
+        <div class="chip"><span class="dot dot-g"></span>CF Tunnel</div>
+        <div class="chip"><span class="dot dot-g"></span>gRPC</div>
+      </div>
+      <div id="dashContent"><div style="text-align:center;padding:40px;color:var(--text2)">Loading...</div></div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-form">
+        <h3>Account Settings</h3>
+        <div class="srow"><label>Admin User</label><input type="text" id="sAdminUser"></div>
+        <div class="srow"><label>Admin Password</label><div style="display:flex;gap:8px"><input type="text" id="sAdminPass" placeholder="Leave empty to keep current"><button class="gen-btn" onclick="document.getElementById('sAdminPass').value=randomStr(16)">Random</button></div></div>
+
+        <h3 style="margin-top:24px">Proxy Settings</h3>
+        <div class="srow"><label>UUID</label><div style="display:flex;gap:8px"><input type="text" id="sUuid"><button class="gen-btn" onclick="document.getElementById('sUuid').value=crypto.randomUUID()">Generate</button></div></div>
+        <div class="srow"><label>VLESS Path</label><input type="text" id="sVlessPath"></div>
+        <div class="srow"><label>VMess Path</label><input type="text" id="sVmPath"></div>
+        <div class="srow"><label>Trojan Path</label><input type="text" id="sTrojanPath"></div>
+        <div class="srow"><label>gRPC Service</label><div style="display:flex;gap:8px"><input type="text" id="sGrpc"><button class="gen-btn" onclick="document.getElementById('sGrpc').value=randomStr(12)">Random</button></div></div>
+
+        <div class="settings-actions">
+          <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+          <button class="btn btn-danger" onclick="restartServices()">Restart Services</button>
+          <button class="btn btn-ghost" onclick="loadSettings()">Reload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+
+function toast(msg,err){const t=$('#toast');t.textContent=msg;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2500)}
+function copy(t){navigator.clipboard.writeText(t).then(()=>toast('Copied!')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.remove(ta);toast('Copied!')})}
+function randomStr(n){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';let r='';for(let i=0;i<n;i++)r+=c[Math.floor(Math.random()*c.length)];return r}
+
+// Auth
+async function checkAuth(){
+  const r=await fetch('/api/check');const d=await r.json();
+  if(d.auth){showApp()}else{showLogin()}
+}
+function showLogin(){$('#loginScreen').style.display='flex';$('#app').style.display='none'}
+function showApp(){$('#loginScreen').style.display='none';$('#app').style.display='block';loadDashboard();loadSettings()}
+
+async function doLogin(){
+  const u=$('#loginUser').value||'admin',p=$('#loginPass').value;
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u,pass:p})});
+  if(r.ok){showApp()}else{$('#loginErr').textContent='Invalid username or password';$('#loginErr').style.display='block'}
+}
+async function doLogout(){await fetch('/api/logout',{method:'POST'});showLogin()}
+
+// Tabs
+function switchTab(el){
+  $$('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  $$('.panel').forEach(p=>p.classList.remove('active'));
+  $('#panel-'+el.dataset.panel).classList.add('active');
+  if(el.dataset.panel==='settings')loadSettings();
+}
+
+// Dashboard
+async function loadDashboard(){
+  try{
+    const r=await fetch('/api/nodes');
+    if(!r.ok)return;
+    const d=await r.json();
+    let h='';
+    h+=`<div class="info-card"><div class="lbl">Tunnel Domain</div><div class="val">${d.tunnel_host||'Loading...'}<span class="copy-btn" onclick="copy('${d.tunnel_host}')">Copy</span></div></div>`;
+    h+=`<div class="info-card"><div class="lbl">UUID</div><div class="val">${d.uuid}<span class="copy-btn" onclick="copy('${d.uuid}')">Copy</span></div></div>`;
+    h+='<div class="proto-grid">';
+    const badges={'vless':'pb-vless','vmess':'pb-vmess','trojan':'pb-trojan','vless-grpc':'pb-grpc','hysteria2':'pb-hy2'};
+    d.protocols.forEach((p,i)=>{
+      const bc=badges[p.type]||'pb-vless';
+      let rows='';
+      for(const[k,v]of Object.entries(p.config)){rows+=`<div class="crow"><span class="ck">${k}</span><span class="cv">${v}</span></div>`}
+      let linkBtn=p.link?`<button class="btn btn-primary btn-sm" onclick="copy(\`${p.link.replace(/`/g,'\\`')}\`)">Copy Link</button>`:'';
+      h+=`<div class="pcard"><div class="phead" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.arr').classList.toggle('open')"><div class="pname"><span class="pbadge ${bc}">${p.name}</span><span style="font-size:11px;color:var(--text2)">${p.transport}</span></div><span class="arr" style="color:var(--text2);transition:transform .2s">&#9660;</span></div><div class="pbody">${rows}<div class="pbtns">${linkBtn}<button class="btn btn-ghost btn-sm" onclick='copy(JSON.stringify(${JSON.stringify(p.config).replace(/'/g,"&#39;")}))'>JSON</button></div></div></div>`;
+    });
+    h+='</div>';
+    $('#dashContent').innerHTML=h;
+  }catch(e){$('#dashContent').innerHTML=`<div class="info-card"><div class="lbl" style="color:var(--danger)">Error</div><div class="val">${e.message}</div></div>`}
+}
+
+// Settings
+async function loadSettings(){
+  try{
+    const r=await fetch('/api/settings');if(!r.ok)return;
+    const d=await r.json();
+    $('#sAdminUser').value=d.admin_user||'';
+    $('#sAdminPass').value='';
+    $('#sUuid').value=d.uuid||'';
+    $('#sVlessPath').value=d.vless_path||'';
+    $('#sVmPath').value=d.vmess_path||'';
+    $('#sTrojanPath').value=d.trojan_path||'';
+    $('#sGrpc').value=d.grpc_service||'';
+  }catch(e){}
+}
+
+async function saveSettings(){
+  const body={
+    admin_user:$('#sAdminUser').value,
+    uuid:$('#sUuid').value,
+    vless_path:$('#sVlessPath').value,
+    vmess_path:$('#sVmPath').value,
+    trojan_path:$('#sTrojanPath').value,
+    grpc_service:$('#sGrpc').value,
+  };
+  const pw=$('#sAdminPass').value;
+  if(pw)body.admin_pass=pw;
+  try{
+    const r=await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(r.ok){toast('Settings saved!');loadDashboard()}else{toast(d.error||'Failed',true)}
+  }catch(e){toast(e.message,true)}
+}
+
+async function restartServices(){
+  if(!confirm('Restart all proxy services?'))return;
+  toast('Restarting...');
+  try{
+    await fetch('/api/restart',{method:'POST'});
+    toast('Services restarted!');
+    setTimeout(loadDashboard,2000);
+  }catch(e){toast('Restart failed',true)}
+}
+
+// Init
+$('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+checkAuth();
+</script>
+</body>
+</html>
